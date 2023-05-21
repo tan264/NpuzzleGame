@@ -42,4 +42,12 @@ By incorporating the A* algorithm, this application provides an option to solve 
 7. Click on the "Guide" option during the game to utilize the A* algorithm and automatically solve the puzzle.
 
 
+## Contributors
+- Lương Vĩnh Lợi
+- Phạm Duy Phú
+- Đặng Hữu Tấn
+- Hoàng Đình Trung
 
+## About
+This is the project for the Algorithm Design and Analysis course by Group 6, K65A6, VNU-HUS.
+<br /><br /><em>Hà Nội 2023</em>
