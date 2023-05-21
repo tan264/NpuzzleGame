@@ -43,8 +43,8 @@ LEFT = 'left'
 RIGHT = 'right'
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT, GUIDE_SURF, GUIDE_RECT, ABOUT_SURF, ABOUT_RECT
-
+    global FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT, GUIDE_SURF, GUIDE_RECT, ABOUT_SURF, ABOUT_RECT, MOVES
+    MOVES = 0
     # Thiết đặt các đối tượng trên giao diện
     pygame.init()
     img = pygame.image.load('res/icon.png')
@@ -54,7 +54,6 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption('Slide Puzzle')
     BASICFONT = pygame.font.Font('freesansbold.ttf', BASICFONTSIZE)
-
     
     GUIDE_SURF, GUIDE_RECT = makeText('Guide',    TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 150)
     RESET_SURF, RESET_RECT = makeText('Reset',    TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 120)
@@ -69,31 +68,32 @@ def main():
     while True: # vòng lặp chính của trò chơi
         slideTo = None # hướng di chuyển
         msg = 'Click tile or press arrow keys to slide.' # đoạn text sẽ xuất hiện phía trái trên cùng của màn hình
-        if mainBoard == SOLVEDBOARD:
+        if mainBoard == SOLVEDBOARD: # kiểm tra đã được giải hay chưa
             msg = 'Solved!'
-            solutionSeq = []
-            allMoves = []
+            MOVES = 0
 
         drawBoard(mainBoard, msg)
 
         checkForQuit()
         for event in pygame.event.get(): # bắt các sự kiện gây ra từ người dùng
             if event.type == MOUSEBUTTONUP: # nếu người dùng dùng chuột click
+                
                 spotx, spoty = getSpotClicked(mainBoard, event.pos[0], event.pos[1]) # bắt toạ độ người dùng click
 
                 if (spotx, spoty) == (None, None): # nếu toạ độ không nằm trong các ô thì có thể là nhấn vào các text bên phải màn hình
-                    if RESET_RECT.collidepoint(event.pos):
+                    if RESET_RECT.collidepoint(event.pos): # nhấn vào nút Reset
+                        MOVES = 0
+                        resetAnimation(mainBoard, allMoves) 
+                        allMoves = []
+                    elif NEW_RECT.collidepoint(event.pos): # nhấn vào nút New game
+                        MOVES = 0
+                        mainBoard, solutionSeq = generateNewPuzzle(LEVEL) 
+                        allMoves = []
+                    elif SOLVE_RECT.collidepoint(event.pos): # nhấn vào nút Solve  
                         if (mainBoard == SOLVEDBOARD):
                             continue
-                        resetAnimation(mainBoard, allMoves) # nhấn vào nút Reset
-                        allMoves = []
-                    elif NEW_RECT.collidepoint(event.pos):
-                        mainBoard, solutionSeq = generateNewPuzzle(LEVEL) # nhấn vào nút New game
-                        allMoves = []
-                    elif SOLVE_RECT.collidepoint(event.pos):
-                        if (mainBoard == SOLVEDBOARD):
-                            continue
-                        resetAnimation(mainBoard, solutionSeq + allMoves) # nhấn vào nút Solve
+                        MOVES = 0
+                        resetAnimation(mainBoard, solutionSeq + allMoves)                   
                         allMoves = []
                     elif GUIDE_RECT.collidepoint(event.pos): # nhấn vào nút Guide
                         if (mainBoard == SOLVEDBOARD):
@@ -103,6 +103,7 @@ def main():
                     elif ABOUT_RECT.collidepoint(event.pos): # nhấn vào nút About           
                         showAboutDialog()                     
                 else: # nếu toạ độ là các ô
+                    MOVES += 1
                     blanky, blankx = getBlankPosition(mainBoard)
                     if spotx == blankx + 1 and spoty == blanky:
                         slideTo = LEFT
@@ -114,6 +115,7 @@ def main():
                         slideTo = DOWN
 
             elif event.type == KEYUP: # nếu người dùng dùng phím điều hướng
+                MOVES += 1
                 if event.key in (K_LEFT, K_a) and isValidMove(mainBoard, LEFT):
                     slideTo = LEFT
                 elif event.key in (K_RIGHT, K_d) and isValidMove(mainBoard, RIGHT):
@@ -137,12 +139,12 @@ def terminate():
 
 
 def checkForQuit():
-    for event in pygame.event.get(QUIT): # get all the QUIT events
-        terminate() # terminate if any QUIT events are present
-    for event in pygame.event.get(KEYUP): # get all the KEYUP events
+    for event in pygame.event.get(QUIT): # bắt sự kiện thoát ứng dụng(ấn X)
+        terminate() # dừng ứng dụng
+    for event in pygame.event.get(KEYUP): # bắt các sự kiện bởi người dùng
         if event.key == K_ESCAPE:
-            terminate() # terminate if the KEYUP event was for the Esc key
-        pygame.event.post(event) # put the other KEYUP event objects back
+            terminate() # nếu là phím Esc thì cũng thoát ứng dụng
+        pygame.event.post(event) # Nếu không phải nút Esc thì post lại sự kiện để thực thi logic theo sự kiện đó
 
 
 def getStartingBoard(): # sinh ma trận ban đầu(=ma trận đích)
@@ -244,6 +246,8 @@ def drawBoard(board, message): # thiết lập giao diện hiển thị board v�
         textSurf, textRect = makeText(message, MESSAGECOLOR, BGCOLOR, 5, 5)
         DISPLAYSURF.blit(textSurf, textRect)
 
+    movesSurf, movesRect = makeText(str(MOVES), MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 35, 5)
+    DISPLAYSURF.blit(movesSurf, movesRect)
     for tiley in range(len(board)):
         for tilex in range(len(board[0])):
             if board[tiley][tilex]:
@@ -259,7 +263,6 @@ def drawBoard(board, message): # thiết lập giao diện hiển thị board v�
     DISPLAYSURF.blit(SOLVE_SURF, SOLVE_RECT)
     DISPLAYSURF.blit(GUIDE_SURF, GUIDE_RECT)
     DISPLAYSURF.blit(ABOUT_SURF, ABOUT_RECT)
-
 
 def slideAnimation(board, direction, message, animationSpeed): # hiển thị animation di chuyển ô
 
