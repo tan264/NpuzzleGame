@@ -70,7 +70,6 @@ def main():
         msg = 'Click tile or press arrow keys to slide.' # đoạn text sẽ xuất hiện phía trái trên cùng của màn hình
         if mainBoard == SOLVEDBOARD: # kiểm tra đã được giải hay chưa
             msg = 'Solved!'
-            MOVES = 0
 
         drawBoard(mainBoard, msg)
 
