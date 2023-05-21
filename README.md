@@ -49,4 +49,4 @@ By incorporating the A* algorithm, this application provides an option to solve 
 - Hoàng Đình Trung
 
 ## About
-This is the project for the Algorithm Design and Analysis course by Group 6, K65A6, VNU-HUS.
+This is the project for the Algorithm Design and Analysis course by Group 6, K65A6, VNU-HUS.<br />Hà Nội 2023
