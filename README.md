@@ -1,6 +1,7 @@
 # 8 Puzzle Game
 
 This is a simple implementation of the classic 8 puzzle game using Python. The application also incorporates the A* algorithm to solve the 8 puzzle problem.
+<br />Note: The project is further developed from this project: https://inventwithpython.com/pygame/chapter4.html.
 
 ## Game Description
 
